@@ -1,1 +1,2 @@
-# Alert_dc_calibration
+# clas12calibration-dc
+DC calibration suite
