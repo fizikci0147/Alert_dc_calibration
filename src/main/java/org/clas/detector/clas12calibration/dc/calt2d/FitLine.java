@@ -14,8 +14,6 @@ import org.jlab.rec.dc.Constants;
  */
 public class FitLine extends Func1D{
     public int i;
-    public int j;
-    public int k;
     private FitFunction fc ;
     public FitLine() {
         super("fcn", 0.0, 2.0);
@@ -23,11 +21,9 @@ public class FitLine extends Func1D{
     }
     public static final int nPars = 11;
     private double[] par = new double[nPars];
-    public FitLine(String name, int i, int j, int k, MnUserParameters pars) {
+    public FitLine(String name, int i, MnUserParameters pars) {
         super(name, 0.0, 2.0);
         this.i = i;
-        this.j = j;
-        this.k = k;
         fc = new FitFunction();
         this.initParameters(pars);
     }
@@ -41,16 +37,9 @@ public class FitLine extends Func1D{
     public double evaluate(double x) { 
         double calcTime = 0;
         double B = 0;
+        double ralpha=0;
         //local angle correction
-        double alpha = T2DCalib.AlphaValues[j];
-        if(this.i>1 && this.i<4) {
-            double theta0 = Math.toDegrees(Math.acos(1-0.02*T2DCalib.BfieldValuesUpd[i-2][j][k]));
-            // correct alpha with theta0, the angle corresponding to the isochrone lines twist due to the electric field
-            alpha-=(double)T2DCalib.polarity*theta0;
-            B = T2DCalib.BfieldValuesUpd[i-2][j][k];
-        }
         //reduce the corrected angle
-        double ralpha = (double) fc.getReducedAngle(alpha);
         double v_0 = par[0];
         double vm = par[1];
         double tmax = par[3];

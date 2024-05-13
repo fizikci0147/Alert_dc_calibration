@@ -7,7 +7,7 @@ package org.clas.detector.clas12calibration.dc.t2d;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import static org.clas.detector.clas12calibration.dc.t2d.TableLoader.BfieldValues;
+//import static org.clas.detector.clas12calibration.dc.t2d.TableLoader.BfieldValues;
 import static org.clas.detector.clas12calibration.dc.t2d.TableLoader.maxTBin;
 
 public class TimeToDistanceEstimator {
@@ -48,84 +48,15 @@ public class TimeToDistanceEstimator {
     * @param SlyrIdx slyr index (0...5)
     * @return the distance to the wire in cm
     */
-    public double interpolateOnGrid(double Bf, double alpha, double t,  int SecIdx, int SlyrIdx) {
+    public double interpolateOnGrid( double t,  int SecIdx, int SlyrIdx) {
         
-        double B = Math.abs(Bf);
-        
-        int binlowB  = this.getBIdx(B);
-        int binhighB = binlowB + 1; 
-
-        if(binhighB > TableLoader.maxBinIdxB) {
-            binhighB = TableLoader.maxBinIdxB;
-        }
-
-        double B1 = BfieldValues[binlowB];
-        double B2 = BfieldValues[binhighB];
-
-         // for alpha ranges		
-        int binlowAlpha  = this.getAlphaIdx(alpha);
-        int binhighAlpha = binlowAlpha + 1;
-
-        if(binhighAlpha > TableLoader.maxBinIdxAlpha) {
-            binhighAlpha = TableLoader.maxBinIdxAlpha;
-        }
-        //if(binhighAlpha==binlowAlpha) {
-        //    binlowAlpha=binhighAlpha-1;
-        //}
-
-        double alpha1 = this.getAlphaFromAlphaIdx(binlowAlpha);	 
-        double alpha2 = this.getAlphaFromAlphaIdx(binhighAlpha);
-        
-        // interpolate in B:
-        double f_B_alpha1_t1 = interpolateLinear(B*B, B1*B1, B2*B2, 
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binlowB][binlowAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binlowB, binlowAlpha)],
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binhighB][binlowAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binhighB, binlowAlpha)]);
-        double f_B_alpha2_t1 = interpolateLinear(B*B, B1*B1, B2*B2, 
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binlowB][binhighAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binlowB, binhighAlpha)],
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binhighB][binhighAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binhighB, binhighAlpha)]);
-        double f_B_alpha1_t2 = interpolateLinear(B*B, B1*B1, B2*B2, 
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binlowB][binlowAlpha][this.getTimeNextIdx(t, SecIdx, SlyrIdx, binlowB, binlowAlpha)],
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binhighB][binlowAlpha][this.getTimeNextIdx(t, SecIdx, SlyrIdx, binhighB, binlowAlpha)]);
-        double f_B_alpha2_t2 = interpolateLinear(B*B, B1*B1, B2*B2, 
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binlowB][binhighAlpha][this.getTimeNextIdx(t, SecIdx, SlyrIdx, binlowB, binhighAlpha)],
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binhighB][binhighAlpha][this.getTimeNextIdx(t, SecIdx, SlyrIdx, binhighB, binhighAlpha)]);
-         // interpolate in d for 2 values of alpha:		 
-        double f_B_alpha1_t = interpolateLinear(t, this.getTimeIdx(t, SecIdx, SlyrIdx, binlowB, binlowAlpha)*2., this.getTimeNextIdx(t, SecIdx, SlyrIdx, binhighB, binlowAlpha)*2., f_B_alpha1_t1, f_B_alpha1_t2);
-        double f_B_alpha2_t = interpolateLinear(t, this.getTimeIdx(t, SecIdx, SlyrIdx, binlowB, binhighAlpha)*2., this.getTimeNextIdx(t, SecIdx, SlyrIdx, binhighB, binhighAlpha)*2., f_B_alpha2_t1, f_B_alpha2_t2);
-        //System.out.println( TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binlowB][binlowAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binlowB, binlowAlpha)]);
-        //System.out.println(SlyrIdx+" binlowB "+binlowB+" binlowAlpha "+binlowAlpha+" t "+this.getTimeIdx(t, SecIdx, SlyrIdx, binlowB, binlowAlpha)+" time "+t);
-        //System.out.println(TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binlowB][binhighAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binlowB, binhighAlpha)]);
-        //System.out.println(SlyrIdx+" binlowB "+binlowB+" binhighAlpha "+binhighAlpha+" t "+this.getTimeIdx(t, SecIdx, SlyrIdx, binlowB, binhighAlpha)+" time "+t);
-        //System.out.println(TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binhighB][binlowAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binhighB, binlowAlpha)]);
-        //System.out.println(SlyrIdx+" binhighB "+binhighB+" binlowAlpha "+binlowAlpha+" t "+this.getTimeIdx(t, SecIdx, SlyrIdx, binhighB, binlowAlpha)+" time "+t);
-        //System.out.println(TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binhighB][binhighAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binhighB, binhighAlpha)]);
-        //System.out.println(SlyrIdx+" binhighB "+binhighB+" binhighAlpha "+binhighAlpha+" t "+this.getTimeIdx(t, SecIdx, SlyrIdx, binhighB, binhighAlpha)+" time "+t);
-        //System.out.println(" f_B_alpha1_t1 "+f_B_alpha1_t1+" f_B_alpha2_t1 "+f_B_alpha2_t1
-        //            +" f_B_alpha1_t2 "+f_B_alpha1_t2+" f_B_alpha2_t2 "+f_B_alpha2_t2
-        //            +" f_B_alpha1_t "+f_B_alpha1_t+" f_B_alpha2_t "+f_B_alpha2_t);
-        
-        // interpolate in alpha: (cos30-cosA)
-        double f_B_alpha_t = interpolateLinear(Math.cos(Math.toRadians(30.))-Math.cos(Math.toRadians(alpha)), 
+        double f_B_alpha_t =0;
+       /* interpolateLinear(Math.cos(Math.toRadians(30.))-Math.cos(Math.toRadians(alpha)), 
                     Math.cos(Math.toRadians(30.))-Math.cos(Math.toRadians(alpha1)), 
-                    Math.cos(Math.toRadians(30.))-Math.cos(Math.toRadians(alpha2)), f_B_alpha1_t, f_B_alpha2_t);
+                    Math.cos(Math.toRadians(30.))-Math.cos(Math.toRadians(alpha2)), f_B_alpha1_t, f_B_alpha2_t);*/
         
         return f_B_alpha_t;
 
-    /*
-        // interpolate in B:
-        double f_B_alpha1_t = interpolateLinear(B*B, B1*B1, B2*B2, 
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binlowB][binlowAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binlowB, binlowAlpha)],
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binhighB][binlowAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binhighB, binlowAlpha)]);
-        double f_B_alpha2_t = interpolateLinear(B*B, B1*B1, B2*B2, 
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binlowB][binhighAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binlowB, binhighAlpha)],
-                    TableLoader.DISTFROMTIME[SecIdx][SlyrIdx][binhighB][binhighAlpha][this.getTimeIdx(t, SecIdx, SlyrIdx, binhighB, binhighAlpha)]);
-        
-        // interpolate in alpha: (cos30-cosA)
-        double f_B_alpha_t = interpolateLinear(Math.cos(Math.toRadians(30.))-Math.cos(Math.toRadians(alpha)), 
-                    Math.cos(Math.toRadians(30.))-Math.cos(Math.toRadians(alpha1)), 
-                    Math.cos(Math.toRadians(30.))-Math.cos(Math.toRadians(alpha2)), f_B_alpha1_t, f_B_alpha2_t);
-        return f_B_alpha_t;
-    */
     }
 
     /**
@@ -133,7 +64,9 @@ public class TimeToDistanceEstimator {
      * @param binAlpha alpha parameter bin
      * @return value of alpha from alpha bin
      */
-    private double getAlphaFromAlphaIdx(int binAlpha) {
+/*  We don't have alpha dependancy remove it -HA
+ *
+ *  private double getAlphaFromAlphaIdx(int binAlpha) {
         double cos30minusalpha = Math.cos(Math.toRadians(30.)) + (double) (binAlpha)*(1. - Math.cos(Math.toRadians(30.)))/5.;
         double alpha =  -(Math.toDegrees(Math.acos(cos30minusalpha)) - 30);
         double alpha1 = 0;
@@ -145,7 +78,8 @@ public class TimeToDistanceEstimator {
              alpha=alpha2;
         }	
         return alpha;
-    }
+    }*/
+
     /**
      * 
      * @param t1 time value in ns
@@ -155,7 +89,8 @@ public class TimeToDistanceEstimator {
      * @param icosalpha cosalpha bin (0...5)
      * @return time bin
      */
-    public int getTimeIdx(double t1, int is, int ir, int ibfield, int icosalpha) {
+    //public int getTimeIdx(double t1, int is, int ir, int ibfield, int icosalpha) {
+    public int getTimeIdx(double t1, int is, int ir) {
         
         DecimalFormat df = new DecimalFormat("#");
         df.setRoundingMode(RoundingMode.CEILING);
@@ -180,6 +115,9 @@ public class TimeToDistanceEstimator {
      * @param b1 bfield value in T
      * @return B field bin
      */
+
+/* No B dependency needed -HA
+
     public int getBIdx(double b1) {
         
 //        int binIdx = (int) ((1+b1)*2) -2;
@@ -206,11 +144,17 @@ public class TimeToDistanceEstimator {
             binIdx = maxBinIdxB;
         return binIdx;
     }
+
+*/ 
+
+
     /**
      * 
      * @param alpha alpha parameter in deg
      * @return alpha bin
      */
+
+ /* No ALpha dependency needed  - HA   
     private int getAlphaIdx(double alpha) {
         double Ccos30minusalpha = Math.cos(Math.toRadians(30.-alpha) ) ; 
         double Cicosalpha = (Ccos30minusalpha - Math.cos(Math.toRadians(30.)))/((1. - Math.cos(Math.toRadians(30.)))/5.);
@@ -233,6 +177,9 @@ public class TimeToDistanceEstimator {
         }
         return binhighT;
     }
+
+
+    */
     
     /**
      * @param slyIdx superlayer index

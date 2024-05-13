@@ -30,8 +30,8 @@ public class FitFunction implements FCNBase{
         _tvstrkdocasProf = tvstrkdocasProf;
     }
          
-    public double eval(double x, double ralpha, double B, double[] par) {
-        
+    public double eval(double x, double[] par) {
+        double ralpha=0., B=0.;
         double v_0 = par[0];
         double vm = par[1];
         double tmax = par[3];
@@ -57,10 +57,6 @@ public class FitFunction implements FCNBase{
         if(x>dmax)
             x=dmax;
         double time = 0;
-        // alpha correction 
-        double cos30minusalpha=Math.cos(Math.toRadians(30.-alpha));
-        double dmaxalpha = dmax*cos30minusalpha;
-        double xhatalpha = x/dmaxalpha;
         //   rcapital is an intermediate parameter
         double rcapital = R*dmax;
         //   delt is another intermediate parameter
@@ -68,93 +64,32 @@ public class FitFunction implements FCNBase{
         double delv=1./vm-1./v_0;
         //   now calculate the primary parameters a, b, c, d
         
-        double c = ((3.*delv)/(R*dmax)+(12*R*R*delt)/(2.*(1-2*R)*
-            (dmax*dmax)));
-        c = c /(4.-(1.-6.*R*R)/(1.-2.*R));
-        double b = delv/(rcapital*rcapital) - 4.*c/(3.*rcapital);
-        double d = 1/v_0;
-        double a = (tmax -  b*dmaxalpha*dmaxalpha*dmaxalpha - 
-                c*dmaxalpha*dmaxalpha - d*dmaxalpha)/(dmaxalpha*dmaxalpha*dmaxalpha*dmaxalpha) ;       
+        double a=0.1,b=0.1,c=0.1,d=0.1;
         time = a*x*x*x*x + b*x*x*x + c*x*x + d*x ;
         
-        //B correction
-        //------------
-        if(superlayer==3 || superlayer==4) {
-            double deltatime_bfield = delBf*Math.pow(bfield,2)*tmax*(Bb1*xhatalpha+Bb2*Math.pow(xhatalpha, 2)+
-                     Bb3*Math.pow(xhatalpha, 3)+Bb4*Math.pow(xhatalpha, 4));
-            //calculate the time at alpha deg. and at a non-zero bfield	          
-            time += deltatime_bfield;
-        }
         return time;
     }
     @Override
     public double valueOf(double[] par) {
         double chisq = 0;
         double delta = 0;
-        for (int j = 0; j < T2DCalib.alphaBins; j++) {
-            if(this.i>1 && this.i<4) {
-                for(int k = 0; k < T2DCalib.BBins; k++) {
-                    if(_tvstrkdocasProf.get(new Coordinate(this.i, j, k)).getVectorX().size()>0){ 
-                        //local angle correction
-                        double theta0 = Math.toDegrees(Math.acos(1-0.02*T2DCalib.BfieldValuesUpd[i-2][j][k]));
-                        double alpha = T2DCalib.AlphaValues[j];
-                        // correct alpha with theta0, the angle corresponding to the isochrone lines twist due to the electric field
-                        alpha-=(double)T2DCalib.polarity*theta0;
-                        //reduce the corrected angle
-                        double ralpha = (double) this.getReducedAngle(alpha);
-                        GraphErrors gr = _tvstrkdocasProf.get(new Coordinate(this.i, j, k));
+                    if(_tvstrkdocasProf.get(new Coordinate(this.i)).getVectorX().size()>0){ 
+                        GraphErrors gr = _tvstrkdocasProf.get(new Coordinate(this.i));
                             
                         for (int ix =0; ix< gr.getDataSize(0); ix++) {
                             double x = gr.getDataX(ix);
                             double time = gr.getDataY(ix);
                             double err = gr.getDataEY(ix);
                             if(err>0) {
-                                double calcTime = this.eval(x, ralpha, T2DCalib.BfieldValuesUpd[i-2][j][k], par);
+                                double calcTime = this.eval(x, par);
                                 delta = (time - calcTime) / err; 
                                 chisq += delta * delta;
                             }
                         }
                     }
-                }
-            } else {
-                if(_tvstrkdocasProf.get(new Coordinate(this.i, j, T2DCalib.BBins)).getVectorX().size()>0){ 
-                    //local angle correction
-                    double alpha = T2DCalib.AlphaValues[j];
-                    //reduce the corrected angle
-                    double ralpha = (double) this.getReducedAngle(alpha);
-                    GraphErrors gr = _tvstrkdocasProf.get(new Coordinate(this.i, j, T2DCalib.BBins));
-
-                    for (int ix =0; ix< gr.getDataSize(0); ix++) {
-                        double x = gr.getDataX(ix);
-                        double time = gr.getDataY(ix);
-                        double err = gr.getDataEY(ix);
-                        if(err>0) {
-                            double calcTime = this.eval(x, ralpha, 0.0, par);
-                            delta = (time - calcTime) / err; 
-                            chisq += delta * delta;
-                        }
-                    }
-                }
-            }
-        }
         return chisq;
         
     }
-    
-    public double getReducedAngle(double alpha) {
-        double ralpha = 0;
-
-        ralpha = Math.abs(Math.toRadians(alpha));
-
-        while (ralpha > Math.PI / 3.) {
-            ralpha -= Math.PI / 3.;
-        }
-        if (ralpha > Math.PI / 6.) {
-            ralpha = Math.PI / 3. - ralpha;
-        }
-
-        return Math.toDegrees(ralpha);
-    }  
     
     
 }
