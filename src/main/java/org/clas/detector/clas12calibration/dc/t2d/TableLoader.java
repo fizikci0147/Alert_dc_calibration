@@ -1,4 +1,5 @@
 package org.clas.detector.clas12calibration.dc.t2d;
+import org.clas.detector.clas12calibration.dc.calt2d.FitFunction;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -50,7 +51,7 @@ public class TableLoader {
             T0ERR[iSec - 1][iSly - 1][iSlot - 1][iCab - 1] = t0Error;
             Constants.setT0(T0);
             Constants.setT0Err(T0ERR);
-            //System.out.println("T0 = "+t0);
+            System.out.println("T0 = "+t0);
         }
         T0LOADED = true;
     }
@@ -71,20 +72,10 @@ public class TableLoader {
 
                 for(int r = 0; r<6; r++ ){ //loop over slys
                     // Fill constants
-                    delta_T0[s][r] = tab.getDoubleValue("delta_T0", s+1,r+1,0);
-                    FracDmaxAtMinVel[s][r] = tab.getDoubleValue("c1", s+1,r+1,0);//use same table. names strings 
-                    deltanm[s][r] = tab.getDoubleValue("deltanm", s+1,r+1,0);
-                    v0[s][r] = tab.getDoubleValue("v0", s+1,r+1,0);
-                    vmid[s][r] = tab.getDoubleValue("c2", s+1,r+1,0);
-                    delta_bfield_coefficient[s][r] = tab.getDoubleValue("delta_bfield_coefficient", s+1,r+1,0); 
-                    distbeta[s][r] = tab.getDoubleValue("distbeta", s+1,r+1,0); 
-                    b1[s][r] = tab.getDoubleValue("b1", s+1,r+1,0);
-                    b2[s][r] = tab.getDoubleValue("b2", s+1,r+1,0);
-                    b3[s][r] = tab.getDoubleValue("b3", s+1,r+1,0);
-                    b4[s][r] = tab.getDoubleValue("b4", s+1,r+1,0);
-                    Tmax[s][r] = tab.getDoubleValue("tmax", s+1,r+1,0);
-                    // end fill constants
-                    double dmax = 2.*Constants.wpdist[r]; 
+                    p1[s][r] = tab.getDoubleValue("p1", s+1,r+1,0);
+                    p2[s][r] = tab.getDoubleValue("p2", s+1,r+1,0);
+                    p3[s][r] = tab.getDoubleValue("p3", s+1,r+1,0);
+                    p4[s][r] = tab.getDoubleValue("p4", s+1,r+1,0);
 
                                     
                 }
@@ -99,9 +90,9 @@ public class TableLoader {
     public static synchronized void ReFill() {
         //reset
         DISTFROMTIME = new double[6][6][nBinsT]; // sector slyr alpha Bfield time bins [s][r][ibfield][icosalpha][tbin]
-        minBinIdxT  = 0;
-        maxBinIdxT  = new int[6][6][8][6];
-        maxTBin = -1;
+       // minBinIdxT  = 0;
+        //maxBinIdxT  = new int[6][6][8][6];
+       // maxTBin = -1;
         double stepSize = 0.0010;
         DecimalFormat df = new DecimalFormat("#");
         df.setRoundingMode(RoundingMode.CEILING);
@@ -132,8 +123,6 @@ public class TableLoader {
     /**
      * 
      * @param x distance to wire in cm
-     * @param alpha local angle in deg
-     * @param bfield B field value a x in T
      * @param sector sector  
      * @param superlayer superlayer 
      * @return returns time (ns) when given inputs of distance x (cm), local angle alpha (degrees) and magnitude of bfield (Tesla).  
@@ -141,33 +130,17 @@ public class TableLoader {
     public static synchronized double calc_Time(double x, int sector, int superlayer) {
         int s = sector - 1;
         int r = superlayer - 1;
-        double dmax = 2.*Constants.wpdist[r]; 
-        double tmax = Tmax[s][r];
-        double Bb1 = b1[s][r];
-        double Bb2 = b2[s][r];
-        double Bb3 = b3[s][r];
-        double Bb4 = b4[s][r];
-        if(x>dmax)
-            x=dmax;
-        double alpha=25; //we dont need these two, just keeping it for now so that code compiles
-        double delBf =0.5;
-        double bfield=0.5;
-        return T2DFunctions.polyFcnMac(x,alpha,bfield, v0[s][r], vmid[s][r], FracDmaxAtMinVel[s][r], 
-                tmax, dmax,delBf, Bb1, Bb2, Bb3, Bb4, superlayer) ;
+        double par1 = p1[s][r];
+        double par2 = p2[s][r];
+        double par3 = p3[s][r];
+        double par4 = p4[s][r];
+        return FitFunction.polyFcnMac(x, par1, par2, par3, par4, superlayer) ;
         
     }
     
-    public static double[][] delta_T0 = new double[6][6];
-    public static double[][] delta_bfield_coefficient = new double[6][6];
-    public static double[][] distbeta = new double[6][6];
-    public static double[][] deltanm = new double[6][6];
-    public static double[][] vmid = new double[6][6];
-    public static double[][] v0 = new double[6][6];
-    public static double[][] b1 = new double[6][6];
-    public static double[][] b2 = new double[6][6];
-    public static double[][] b3 = new double[6][6];
-    public static double[][] b4 = new double[6][6];
-    public static double[][] Tmax = new double[6][6];
-    public static double[][] FracDmaxAtMinVel = new double[6][6];		// fraction of dmax corresponding to the point in the cell where the velocity is minimal
+    public static double[][] p1 = new double[6][6];
+    public static double[][] p2 = new double[6][6];
+    public static double[][] p3 = new double[6][6];
+    public static double[][] p4 = new double[6][6];
 
 }

@@ -125,7 +125,7 @@ public class Driver {
                 return;
             }
         });
-        panel.add(TDCButton);
+      //  panel.add(TDCButton); // remove the TDC cuts Hamza
         
         
         frame.add(panel, BorderLayout.PAGE_END);

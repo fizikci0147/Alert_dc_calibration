@@ -14,10 +14,11 @@ import org.jlab.rec.dc.Constants;
 /**
  *
  * @author ziegler
+ * @author Hamza
  */
 public class FitFunction implements FCNBase{
 
-    public double _beta = 1.0;
+  //  public double _beta = 1.0;
     
     private Map<Coordinate, GraphErrors> _tvstrkdocasProf;
     private int i;
@@ -31,41 +32,19 @@ public class FitFunction implements FCNBase{
     }
          
     public double eval(double x, double[] par) {
-        double ralpha=0., B=0.;
-        double v_0 = par[0];
-        double vm = par[1];
-        double tmax = par[3];
-        double distbeta = par[4]; 
-        double delBf = par[5]; 
-        double Bb1 = par[6]; 
-        double Bb2 = par[7]; 
-        double Bb3 = par[8]; 
-        double Bb4 = par[9]; 
-        double R = par[2];
-        double dmax = par[10];
-        double deltatime_beta = (Math.sqrt(x * x + (distbeta * _beta * _beta) 
-                * (distbeta* _beta * _beta)) - x) / Constants.V0AVERAGED;
+        double p1 = par[0]; 
+        double p2 = par[1]; 
+        double p3 = par[2]; 
+        double p4 = par[3]; 
 
-        double calcTime = this.polyFcnMac(x,  ralpha,  B,  v_0,  vm,  R, 
-            tmax,  dmax,  delBf,  Bb1,  Bb2,  Bb3,  Bb4, i+1) + deltatime_beta ;
+        double calcTime = this.polyFcnMac(x,p1,  p2,  p3,  p4, i+1);
         
         return calcTime;
     }
-    public double polyFcnMac(double x, double alpha, double bfield, double v_0, double vm, double R, 
-            double tmax, double dmax, double delBf, double Bb1, double Bb2, double Bb3, double Bb4, int superlayer) {
-        
-        if(x>dmax)
-            x=dmax;
+    public static double polyFcnMac(double x, double p1, double p2, double p3, double p4, int superlayer) {
+      
         double time = 0;
-        //   rcapital is an intermediate parameter
-        double rcapital = R*dmax;
-        //   delt is another intermediate parameter
-        double delt=tmax-dmax/v_0;
-        double delv=1./vm-1./v_0;
-        //   now calculate the primary parameters a, b, c, d
-        
-        double a=0.1,b=0.1,c=0.1,d=0.1;
-        time = a*x*x*x*x + b*x*x*x + c*x*x + d*x ;
+        time = p1*x*x*x*x + p2*x*x*x + p3*x*x + p4*x ;
         
         return time;
     }

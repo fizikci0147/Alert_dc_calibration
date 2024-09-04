@@ -74,12 +74,12 @@ public class Refit {
             cf.Fit(clus, true);
             cf.SetResidualDerivedParams(clus, true, false, T2DViewer.dcDetector); //calcTimeResidual=false, resetLRAmbig=false 
             
-            double trkAngle = clus.get_clusterLineFitSlope();
+         /*   double trkAngle = clus.get_clusterLineFitSlope();
             //local angle updated
             double alpha = Math.toDegrees(Math.atan(trkAngle));
             for(FittedHit h : clus) {
                 h.setAlpha(alpha);
-            }
+            }*/
         }
         clusters.clear();
     }

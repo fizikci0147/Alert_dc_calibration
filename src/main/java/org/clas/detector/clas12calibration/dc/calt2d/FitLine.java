@@ -11,6 +11,7 @@ import org.jlab.rec.dc.Constants;
 /**
  *
  * @author ziegler
+ * @author Hamza
  */
 public class FitLine extends Func1D{
     public int i;
@@ -19,7 +20,7 @@ public class FitLine extends Func1D{
         super("fcn", 0.0, 2.0);
         fc = new FitFunction();
     }
-    public static final int nPars = 11;
+    public static final int nPars = 4;
     private double[] par = new double[nPars];
     public FitLine(String name, int i, MnUserParameters pars) {
         super(name, 0.0, 2.0);
@@ -36,26 +37,12 @@ public class FitLine extends Func1D{
     @Override
     public double evaluate(double x) { 
         double calcTime = 0;
-        double B = 0;
-        double ralpha=0;
-        //local angle correction
-        //reduce the corrected angle
-        double v_0 = par[0];
-        double vm = par[1];
-        double tmax = par[3];
-        double distbeta = par[4]; 
-        double delBf = par[5]; 
-        double Bb1 = par[6]; 
-        double Bb2 = par[7]; 
-        double Bb3 = par[8]; 
-        double Bb4 = par[9]; 
-        double R = par[2];
-        double dmax = par[10];
-        double deltatime_beta = (Math.sqrt(x * x + (distbeta * fc._beta * fc._beta) 
-                * (distbeta* fc._beta * fc._beta)) - x) / Constants.V0AVERAGED;
+        double p1 = par[0]; 
+        double p2 = par[1]; 
+        double p3 = par[2]; 
+        double p4 = par[3]; 
 
-        calcTime = fc.polyFcnMac(x,  ralpha,  B,  v_0,  vm,  R, 
-            tmax,  dmax,  delBf,  Bb1,  Bb2,  Bb3,  Bb4, i+1) + deltatime_beta ;
+        calcTime = fc.polyFcnMac(x, p1,  p2,  p3,  p4, i+1);
         
         //System.out.println("ijk "+i+""+j+""+k+" b "+(float)T2DCalib.BfieldValues[k]+" ralpha "+(float)ralpha+" x "+x+" time "+(float)calcTime);
         return calcTime;

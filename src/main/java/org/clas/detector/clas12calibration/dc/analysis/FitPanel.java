@@ -62,11 +62,11 @@ public class FitPanel {
     }
     public boolean fitted = false;
     public void refit(Map<Coordinate, MnUserParameters> TvstrkdocasFitPars) throws FileNotFoundException{
-        boolean[][] fixedPars = new boolean[10][6];
+        boolean[][] fixedPars = new boolean[4][6];
         for(int j = 0; j<6; j++) {
             pars.get(j).clear();
         }
-        int npar = 10;
+        int npar = 4;
         for(int j = 0; j<6; j++) {
             for(int i=0; i<npar; i++){   
                 if(panel.params[i][j].getText().isEmpty()){
@@ -97,13 +97,13 @@ public class FitPanel {
             }
             
             this._pM.runFit(j, fixedPars);
-            for(int p = 0; p<10; p++) {
+            for(int p = 0; p<4; p++) {
                 panel.pars[p][j] = TvstrkdocasFitPars.get(new Coordinate(j)).value(p);
-                if(p!=3) {
+                //if(p!=3) {
                     panel.params[p][j].setText(String.format("%.5f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
-                } else {
-                    panel.params[p][j].setText(String.format("%.3f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
-                }
+                //} else {
+               //     panel.params[p][j].setText(String.format("%.3f",TvstrkdocasFitPars.get(new Coordinate(j)).value(p)));
+              //  }
             }
         }
         fitted = true;
@@ -125,7 +125,7 @@ public class FitPanel {
         JPanel panel;
     	JTextField minRange = new JTextField(5);
 	JTextField maxRange = new JTextField(5);
-	JTextField[][] params = new JTextField[10][6];
+	JTextField[][] params = new JTextField[4][6];
         JCheckBox[][]    fixFit ;
         
         JButton   fitButton = null;
@@ -133,36 +133,36 @@ public class FitPanel {
         JButton   resButton = null;
         JButton   reCookButton = null;
         
-        String[] parNames = new String[] {"v0", "vmid", "R", "tmax", "distbeta", "delBf", "b1", "b2", "b3", "b4"};
-        double[][] pars = new double[10][6];
+        String[] parNames = new String[] {"b1", "b2", "b3", "b4"};
+        double[][] pars = new double[4][6];
         
         public CustomPanel2(Map<Coordinate, MnUserParameters> TvstrkdocasFitPars) {        
             super(new BorderLayout());
             for(int i = 0; i < 6; i++) {
-                for(int p = 0; p<10; p++) {
+                for(int p = 0; p<4; p++) {
                     pars[p][i] = TvstrkdocasFitPars.get(new Coordinate(i)).value(p);
                 }
             }
-            int npar = 10;
+            int npar = 4;
             panel = new JPanel(new GridLayout(npar+1, 6));            
-            fixFit = new JCheckBox[10][6];
+            fixFit = new JCheckBox[4][6];
             for (int i = 0; i < npar; i++) {  
                 JLabel l = new JLabel("      "+parNames[i], JLabel.LEADING);
                 panel.add(l);
                 for (int j = 0; j < 6; j++) {
                     fixFit[i][j] = new JCheckBox("Fix");
-                    if(i==2 || i>4) {
-                        fixFit[i][j].setSelected(true);
-                    } else {
+                   // if(i==2 || i>4) {
+                     //   fixFit[i][j].setSelected(true);
+                   // } else {
                         fixFit[i][j].setSelected(false);
-                    }
+                   // }
                     
                     params[i][j] = new JTextField(3);
-                    if(i!=3) {
+                    //if(i!=3) {
                         params[i][j].setText(String.format("%.5f", pars[i][j]));
-                    } else {
-                        params[i][j].setText(String.format("%.3f", pars[i][j]));
-                    }
+                   // } else {
+                   //     params[i][j].setText(String.format("%.3f", pars[i][j]));
+                  //  }
                     panel.add(params[i][j]);
                     panel.add(fixFit[i][j]);
                 }
